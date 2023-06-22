@@ -1,5 +1,5 @@
-const Post = require('../../models/Post');
-
+const Post = require("../../models/Post");
+const Tag = require("../../models/Tag");
 exports.fetchPost = async (postId, next) => {
   try {
     const post = await Post.findById(postId);
@@ -9,7 +9,7 @@ exports.fetchPost = async (postId, next) => {
   }
 };
 
-exports.postsCreate = async (req, res) => {
+exports.postsCreate = async (req, res, next) => {
   try {
     const newPost = await Post.create(req.body);
     res.status(201).json(newPost);
@@ -18,7 +18,7 @@ exports.postsCreate = async (req, res) => {
   }
 };
 
-exports.postsDelete = async (req, res) => {
+exports.postsDelete = async (req, res, next) => {
   try {
     await Post.findByIdAndRemove({ _id: req.post.id });
     res.status(204).end();
@@ -27,7 +27,7 @@ exports.postsDelete = async (req, res) => {
   }
 };
 
-exports.postsUpdate = async (req, res) => {
+exports.postsUpdate = async (req, res, next) => {
   try {
     await Post.findByIdAndUpdate(req.post.id, req.body);
     res.status(204).end();
@@ -38,8 +38,33 @@ exports.postsUpdate = async (req, res) => {
 
 exports.postsGet = async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find().populate("tags");
     res.json(posts);
+  } catch (error) {
+    next(error);
+  }
+};
+exports.createTag = async (req, res, next) => {
+  try {
+    const tag = await Tag.create(req.body);
+    return res.status(201).json(tag);
+  } catch (error) {
+    next(error);
+  }
+};
+exports.tagAdd = async (req, res, next) => {
+  try {
+    //you cannot add a tag without having a post before hand
+    const { tagId } = req.params;
+    const tag = await Tag.findById(tagId);
+    const updatedPost = await Post.findByIdAndUpdate(req.post._id, {
+      $push: { tags: tag._id },
+    });
+
+    const updatedTag = await Tag.findByIdAndUpdate(tagId, {
+      $push: { posts: req.post._id },
+    });
+    res.status(204).end();
   } catch (error) {
     next(error);
   }

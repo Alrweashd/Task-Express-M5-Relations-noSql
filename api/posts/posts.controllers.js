@@ -64,7 +64,7 @@ exports.tagAdd = async (req, res, next) => {
     const updatedTag = await Tag.findByIdAndUpdate(tagId, {
       $push: { posts: req.post._id },
     });
-    res.status(204).end();
+    res.status(201).end();
   } catch (error) {
     next(error);
   }

@@ -1,18 +1,27 @@
 const Post = require("../../models/Post");
 const Author = require("../../models/Author");
-exports.fetchAuthor = async (id) => {};
+
+exports.fetchAuthor = async (authorId) => {
+  const foundAuthor = await Author.findById(authorId);
+  console.log("here", foundAuthor);
+  return foundAuthor;
+};
 
 exports.postsCreate = async (req, res, next) => {
   try {
+    //creating a post and adding the author id to it
+    //each post has one author but an author can have many posts
     const post = req.body;
-    const { authorId } = req.params;
-    const foundAuthor = await Author.findById(authorId);
-    if (!foundAuthor) return res.status(404).json({ msg: "author not found" });
-    const newPost = await Post.create(post);
-    const addPostToAuthor = await Author.findByIdAndUpdate(authorId, {
-      $push: { posts: newPost._id },
+    //one
+    const newPostAndAddAuthToPost = await Post.create({
+      ...post,
+      authors: req.author,
     });
-    res.status(201).json(addPostToAuthor);
+    //many
+    const addPostToAuthor = await Author.findByIdAndUpdate(req.author, {
+      $push: { posts: newPostAndAddAuthToPost._id },
+    });
+    return res.status(201).json(newPostAndAddAuthToPost);
   } catch (error) {
     next(error);
   }
@@ -27,10 +36,20 @@ exports.authorCreate = async (req, res, next) => {
   }
 };
 
-exports.authorAll = async (req, res, next) => {
+exports.authors = async (req, res, next) => {
   try {
     const authors = await Author.find().populate("posts");
     res.status(201).json(authors);
+  } catch (error) {
+    next(error);
+  }
+};
+exports.authorDelete = async (req, res, next) => {
+  try {
+    console.log("first");
+    // console.log("hereeee", req.author);
+    await Author.findByIdAndDelete(req.author);
+    return res.status(204).end();
   } catch (error) {
     next(error);
   }

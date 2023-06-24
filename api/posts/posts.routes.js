@@ -8,6 +8,7 @@ const {
   postsCreate,
   tagAdd,
   createTag,
+  getTags,
 } = require("./posts.controllers");
 
 router.param("postId", async (req, res, next, postId) => {
@@ -26,8 +27,10 @@ router.get("/", postsGet);
 router.post("/", postsCreate);
 
 router.delete("/:postId", postsDelete);
-
 router.put("/:postId", postsUpdate);
-router.post("/createTag", createTag);
+
+router.get("/tags", getTags);
+router.post("/add-tag", createTag);
+//many to many
 router.post("/:postId/:tagId", tagAdd);
 module.exports = router;

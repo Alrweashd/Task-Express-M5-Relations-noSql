@@ -69,3 +69,13 @@ exports.tagAdd = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getTags = async (req, res, next) => {
+  try {
+    //you cannot add a tag without having a post before hand
+    const tags = await Tag.find().populate("posts");
+    return res.status(201).json(tags);
+  } catch (error) {
+    next(error);
+  }
+};

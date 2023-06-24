@@ -15,7 +15,7 @@ exports.postsCreate = async (req, res, next) => {
     //one
     const newPostAndAddAuthToPost = await Post.create({
       ...post,
-      authors: req.author,
+      author: req.author,
     });
     //many
     const addPostToAuthor = await Author.findByIdAndUpdate(req.author, {
